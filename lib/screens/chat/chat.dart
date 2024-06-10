@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_ai/components/button.dart';
 import 'package:google_ai/components/chat_message.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
@@ -22,7 +23,11 @@ class _ChatState extends State<Chat> {
     model = GenerativeModel(
       model: 'gemini-1.5-flash',
       apiKey: "AIzaSyCt5G3ZJczijZkiX1btqa0nwAK6BRHM1a8",
-      generationConfig: GenerationConfig(temperature: 0.6),
+      generationConfig: GenerationConfig(
+        temperature: 0.7,
+        topK: 50,
+        topP: 0.8,
+      ),
     );
     /// initialized chat
      chat = model.startChat();
@@ -34,20 +39,53 @@ class _ChatState extends State<Chat> {
 
   Future<void> _handleSubmitted(String text) async {
     isLoading = true;
-    _textController.clear();
-    ChatMessage message = ChatMessage(
-      text: text,
-      isUserMessage: true,
-    );
-    setState(() {
-      _messages.insert(0, message);
-    });
+     try{
+       _textController.clear();
+       ChatMessage message = ChatMessage(
+         text: text,
+         isUserMessage: true,
+       );
+       setState(() {
+         _messages.insert(0, message);
+       });
+       final content = Content.text(text);
+       final response = await chat.sendMessage(content);
+       print(response.text);
+       if(response.text != null ){
+          _getBotResponse(response.text??"");
+       }
+       else {
+         print("Response is empty");
+         setState(() {
+           isLoading = false;
+         });
+         Fluttertoast.showToast(
+             msg: "Something went wrong",
+             toastLength: Toast.LENGTH_SHORT,
+             gravity: ToastGravity.BOTTOM,
+             timeInSecForIosWeb: 1,
+             backgroundColor: const Color(0xFF8B4AFA),
+             textColor: Colors.white,
+             fontSize: 16.0
+         );
+       }
 
-
-    final content = Content.text(text);
-    final response = await chat.sendMessage(content);
-    print(response.text);
-    _getBotResponse(response.text??"");
+     }
+     catch(e){
+       print("This is errror ${e.toString()}");
+       setState(() {
+         isLoading = false;
+       });
+       Fluttertoast.showToast(
+           msg: "Something went wrong",
+           toastLength: Toast.LENGTH_SHORT,
+           gravity: ToastGravity.CENTER,
+           timeInSecForIosWeb: 1,
+           backgroundColor: const Color(0xFF2DB2E1),
+           textColor: Colors.white,
+           fontSize: 16.0
+       );
+     }
   }
 
   void _getBotResponse(String userMessage) {
@@ -140,7 +178,7 @@ class _ChatState extends State<Chat> {
 
             IconButton(
               icon: const Icon(Icons.send, color: Colors.greenAccent,),
-              onPressed: () => _handleSubmitted(_textController.text),
+              onPressed: () => _textController.text.isNotEmpty?_handleSubmitted(_textController.text):null,
             ),
           ],
         ),

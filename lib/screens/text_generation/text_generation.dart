@@ -134,7 +134,7 @@ class _TextGenerationState extends State<TextGeneration> {
             ),
             IconButton(
               icon: const Icon(Icons.send, color: Colors.greenAccent,),
-              onPressed: () => _handleSubmitted(_textController.text),
+              onPressed: () => _textController.text.isNotEmpty?_handleSubmitted(_textController.text):null,
             ),
           ],
         ),

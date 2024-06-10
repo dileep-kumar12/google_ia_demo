@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_ai/components/button.dart';
 import 'package:google_ai/components/chat_message.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
@@ -37,17 +38,19 @@ class _ImageTextInputState extends State<ImageTextInput> {
     ChatMessage message = ChatMessage(
       text: text,
       isUserMessage: true,
+      isImage: true,
+      image: _image!.path,
     );
-    setState(() {
-      _messages.insert(0, message);
-    });
 
     /// this code user for image and text input
      final prompt = TextPart(text);
      var imageByte = await _image?.readAsBytes();
      var imageMimeType = "image/jpg";
      final imageParts = [  DataPart(imageMimeType, imageByte!) ];
-
+    setState(() {
+      _messages.insert(0, message);
+      _image = null;
+    });
      final response = await model.generateContent([
        Content.multi(
            [prompt, ...imageParts]
@@ -55,10 +58,9 @@ class _ImageTextInputState extends State<ImageTextInput> {
      ]);
 
     _getBotResponse(response.text??"");
-    _image = null;
   }
 
-  void _getBotResponse(String userMessage) {
+  void _getBotResponse(String userMessage ) {
     isLoading = false;
     // Replace this code with actual API integration code
     ChatMessage message = ChatMessage(
@@ -68,6 +70,18 @@ class _ImageTextInputState extends State<ImageTextInput> {
     setState(() {
       _messages.insert(0, message);
     });
+  }
+
+  showSnackbar(){
+    Fluttertoast.showToast(
+        msg: "Please select Image !",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: const Color(0xFF2DB2E1),
+        textColor: Colors.white,
+        fontSize: 16.0
+    );
   }
 
   final spinkit = const SpinKitWave(
@@ -167,7 +181,7 @@ class _ImageTextInputState extends State<ImageTextInput> {
             ),
             IconButton(
               icon: const Icon(Icons.send, color: Colors.greenAccent,),
-              onPressed: () => _image != null?_handleSubmitted(_textController.text):print("please select picture"),
+              onPressed: () => _image != null?_handleSubmitted(_textController.text):showSnackbar(),
             ),
           ],
         ),
