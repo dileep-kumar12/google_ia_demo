@@ -1,10 +1,13 @@
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_ai/components/button.dart';
 import 'package:google_ai/components/chat_message.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 class Chat extends StatefulWidget {
@@ -16,26 +19,67 @@ class _ChatState extends State<Chat> {
   late final GenerativeModel model;
   bool isLoading = false;
   late ChatSession chat;
+  late final SharedPreferences prefs;
+  final TextEditingController _textController = TextEditingController();
+  final List<ChatMessage> _messages = [];
+  List chatData = [];
 
 
   @override
   void initState() {
-    model = GenerativeModel(
-      model: 'gemini-1.5-flash',
-      apiKey: "AIzaSyCt5G3ZJczijZkiX1btqa0nwAK6BRHM1a8",
-      generationConfig: GenerationConfig(
-        temperature: 0.7,
-        topK: 50,
-        topP: 0.8,
-      ),
-    );
-    /// initialized chat
-     chat = model.startChat();
+    init();
     super.initState();
   }
 
-  final TextEditingController _textController = TextEditingController();
-  final List<ChatMessage> _messages = [];
+  init() async {
+     prefs = await SharedPreferences.getInstance();
+    model = GenerativeModel(
+        model: 'gemini-1.0-pro-001',
+        apiKey: "AIzaSyDybdEfcpCIXLapx5ag9LQKcuDCwoeKaqE",
+        generationConfig: GenerationConfig(
+          temperature: 0.7,
+          topK: 50,
+          topP: 0.8,
+        ),
+        safetySettings: [
+          SafetySetting(HarmCategory.harassment, HarmBlockThreshold.high),
+          SafetySetting(HarmCategory.hateSpeech, HarmBlockThreshold.high),
+          SafetySetting(HarmCategory.sexuallyExplicit, HarmBlockThreshold.high),
+          SafetySetting(HarmCategory.sexuallyExplicit, HarmBlockThreshold.high),
+        ],
+      //systemInstruction: Content()
+    );
+
+
+    /// initialized chat
+
+     var chatDataPrefs = prefs.getString("chatHistory");
+     if(chatDataPrefs != null){
+       print("This is Chat data: ${jsonDecode(chatDataPrefs)}");
+       List chatList = jsonDecode(chatDataPrefs);
+       print("Length: ${chatList.length}");
+       List<Content> contentList =[];
+       for (var element in chatList) {
+         ChatMessage message = ChatMessage(
+           text: element["text"],
+           isUserMessage: element["isUserMessage"],
+         );
+           contentList.add(Content.text(element["text"]));
+         _messages.insert(0, message);
+       }
+       chat = model.startChat(
+         history: contentList,
+       );
+
+     }
+     else {
+       chat = model.startChat();
+     }
+     setState(() {
+
+     });
+  }
+
 
   Future<void> _handleSubmitted(String text) async {
     isLoading = true;
@@ -47,6 +91,8 @@ class _ChatState extends State<Chat> {
        );
        setState(() {
          _messages.insert(0, message);
+         chatData.add({"text":text, "isUserMessage":true});
+         prefs.setString("chatHistory", jsonEncode(chatData));
        });
        final content = Content.text(text);
        final response = await chat.sendMessage(content);
@@ -97,6 +143,8 @@ class _ChatState extends State<Chat> {
     );
     setState(() {
       _messages.insert(0, message);
+      chatData.add({"text":userMessage, "isUserMessage":false});
+      prefs.setString("chatHistory", jsonEncode(chatData));
     });
   }
 
@@ -121,8 +169,9 @@ class _ChatState extends State<Chat> {
         actions: [
           InkWell(
             onTap: () {
+              _messages.clear();
+              prefs.remove('chatHistory');
               setState(() {
-                _messages.clear();
               });
             },
             child: Padding(
