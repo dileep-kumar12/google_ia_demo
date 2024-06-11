@@ -35,7 +35,7 @@ class _ChatState extends State<Chat> {
      prefs = await SharedPreferences.getInstance();
     model = GenerativeModel(
         model: 'gemini-1.0-pro-001',
-        apiKey: "AIzaSyDybdEqE",
+        apiKey: "AIzaSyDybdEfcpCIXLapx5ag9LQKcuDCwoeKaqE",
         generationConfig: GenerationConfig(
           temperature: 0.7,
           topK: 50,
