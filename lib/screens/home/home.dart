@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_ai/components/button.dart';
 import 'package:google_ai/components/custom_carousel.dart';
-import 'package:google_ai/face/face_detection.dart';
-import 'package:google_ai/face/object_detection.dart';
 import 'package:google_ai/screens/chat/chat.dart';
 import 'package:google_ai/screens/image_text_input/image_text_input.dart';
 import 'package:google_ai/screens/text_generation/text_generation.dart';
@@ -88,11 +86,11 @@ class _HomeState extends State<Home> {
               :Column(
             children: [
               InkWell(
-                  onTap: (){Navigator.push(context, MaterialPageRoute(builder: (_)=>  FaceDetectorView() ));},
+                  onTap: (){Navigator.push(context, MaterialPageRoute(builder: (_)=>  Chat() ));},
                   child:  CustomButton(text: "Face Detector", color: Colors.deepPurpleAccent, height: 40, widgth: 300, fontSize: 20,)),
               const SizedBox(height: 20),
               InkWell(
-                  onTap: (){Navigator.push(context, MaterialPageRoute(builder: (_)=>  ObjectDetectorView() ));},
+                  onTap: (){Navigator.push(context, MaterialPageRoute(builder: (_)=>  TextGeneration() ));},
                   child:  CustomButton(text: "Object Detector", color: Colors.greenAccent, height: 40, widgth: 300, fontSize: 19,)),
               const SizedBox(height: 20),
             ],
