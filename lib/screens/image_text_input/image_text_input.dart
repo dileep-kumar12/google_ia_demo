@@ -24,7 +24,7 @@ class _ImageTextInputState extends State<ImageTextInput> {
   void initState() {
     model = GenerativeModel(
       model: 'gemini-1.5-flash',
-      apiKey: "AIzaSyCt5G3ZJczijZkiX1btqa0nwAK6BRHM1a8",
+      apiKey: "AIzaSyCwAK6BRHM1a8",
     );
     super.initState();
   }

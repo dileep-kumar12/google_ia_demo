@@ -19,7 +19,7 @@ class _TextGenerationState extends State<TextGeneration> {
   void initState() {
     model = GenerativeModel(
       model: 'gemini-1.5-flash',
-      apiKey: "AIzaSyCt5G3ZJczijZkiX1btqa0nwAK6BRHM1a8",
+      apiKey: "AIzaSyC6BRHM1a8",
        generationConfig: GenerationConfig(temperature: 0),
     );
     super.initState();
